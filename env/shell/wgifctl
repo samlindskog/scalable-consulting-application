@@ -1,0 +1,94 @@
+#!/bin/bash
+
+#Samuel Lindskog
+#lindskogsamuel@yahoo.com
+
+#script for initialization of wg virtual device for use by 
+#systemd on startup and shutdown
+
+
+if=$1
+ip=$2
+subnet=$3
+cidr=$4
+action=$5
+
+if [[ -z $if ]] || [[ -z $ip ]] || [[ -z $action ]] \
+       	|| [[ -z $subnet ]] || [[ -z $cidr ]]
+then
+	echo "Usage: wgifctl PHYSICAL-IFDEV IFADDR SUBNET CIDR { up | down }"
+	exit 1
+fi
+
+#function for address cleanup, slightly more complicated
+#then link or route cleanup, hence its own function
+#
+#deletes IFADDR from either wg0 or PHYSICAL-IFDEV (usually eth0). If 
+#reboot is not clean, IFADDR may appear on eth0 device upon reboot
+
+function clean-address () {
+	if [[ -n $(ip address | grep wg0) ]]
+	then
+		ip address del $ip$cidr dev wg0
+	else
+		ip address del $ip$cidr dev $if
+	fi
+}
+
+
+#Cleanup function removes routes, addresses, and network devices
+#associated with wireguard
+
+function cleanup () {
+
+	#forms a string of for /route/address/link depending on
+	#required cleanup
+
+	switch=""
+	[[ -n $(ip route | grep $subnet) ]] && switch="$switch/route"
+	[[ -n $(ip address | grep $ip) ]] && switch="$switch/address"
+	[[ -n $(ip link | grep wg0) ]] && switch="$switch/link"
+
+	case $switch in
+		*route*)
+			ip route del $subnet$cidr
+			;;&
+		*address*)
+			clean-address
+			;;&
+		*link)
+			ip link set wg0 down
+			ip link delete wg0 type wireguard
+			;;&
+	esac
+}
+
+
+#executes wireguard device, address, and route initialization
+#after a call to cleanup
+
+function startup () {
+	cleanup
+	ip link add link $if name wg0 type wireguard
+	ip address add $ip$cidr dev wg0 scope link
+	ip link set wg0 up
+
+	#routes on device are cached while computer is online,
+	#below is a check to make sure route initialization is
+	#required
+
+	[[ -z $(ip route | grep $subnet) ]] && \
+		ip route add $subnet$cidr dev eth0 scope link src $ip
+}
+
+
+case $action in
+	up)
+		startup
+		;;
+	down)
+		cleanup
+		;;
+esac
+
+exit 0

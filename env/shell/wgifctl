@@ -7,18 +7,55 @@
 #systemd on startup and shutdown
 
 
+function usage () {
+	echo "Usage:"
+	echo "wgifctl CONFIG-FILE { up | down }"
+	echo "wgifctl -l PHYSICAL-IFDEV IFADDR SUBNET CIDR { up | down }"
+}
+
+
+#if -l flag present, lflag='yes' and args are taken
+#from positional params
+
+lflag="no"
+while getopts ":l" name; do
+	case $name in
+		l)
+			lflag="yes"
+			;;
+		*)
+			usage
+			;;
+	esac
+done
+shift $(($OPTIND - 1))
+
+
+#when no flag present, run -l with args from config
+
+[[ $lflag = no ]] && {
+	default=/dev/null	#prevents 'ambiguous redirect' error
+	conf=${1:-$default}	#if $1 unset
+	
+	eval "./$0 -l $(<$conf) $2"
+	exit $?
+}
+
 if=$1
 ip=$2
 subnet=$3
 cidr=$4
 action=$5
 
+
+#rudimentary check for missing args
+
 if [[ -z $if ]] || [[ -z $ip ]] || [[ -z $action ]] \
        	|| [[ -z $subnet ]] || [[ -z $cidr ]]
 then
-	echo "Usage: wgifctl PHYSICAL-IFDEV IFADDR SUBNET CIDR { up | down }"
-	exit 1
+	usage
 fi
+
 
 #function for address cleanup, slightly more complicated
 #then link or route cleanup, hence its own function
@@ -44,7 +81,6 @@ function cleanup () {
 	#forms a string of form /route/address/link depending on
 	#required cleanup
 
-	switch=""
 	[[ -n $(ip route | grep $subnet) ]] && switch="$switch/route"
 	[[ -n $(ip address | grep $ip) ]] && switch="$switch/address"
 	[[ -n $(ip link | grep wg0) ]] && switch="$switch/link"

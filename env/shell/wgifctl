@@ -11,6 +11,7 @@ function usage () {
 	echo "Usage:"
 	echo "wgifctl CONFIG-FILE { up | down }"
 	echo "wgifctl -l PHYSICAL-IFDEV IFADDR SUBNET CIDR { up | down }"
+	exit 1
 }
 
 
@@ -36,10 +37,11 @@ shift $(($OPTIND - 1))
 [[ $lflag = no ]] && {
 	default=/dev/null	#prevents 'ambiguous redirect' error
 	conf=${1:-$default}	#if $1 unset
-	
+
 	eval "./$0 -l $(<$conf) $2"
 	exit $?
 }
+
 
 if=$1
 ip=$2

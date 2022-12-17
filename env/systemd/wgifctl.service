@@ -1,0 +1,10 @@
+[Unit]
+Description=Wireguard Interface Control (sam)
+Before=ifup@eth0.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=+/bin/wgifctl /etc/wgifctl.conf up
+ExecStop=+/bin/wgifctl /etc/wgifctl.conf down
+

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cp ../shell/wgifctl /bin
+cp ../shell/wgifctl.conf /etc
+cp ../systemd/wgifctl.service /etc/systemd/system
+
+#unit ready to enable
+#systemctl enable wgifctl --now

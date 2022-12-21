@@ -8,3 +8,5 @@ RemainAfterExit=yes
 ExecStart=+/bin/wgifctl /etc/wgifctl.conf up
 ExecStop=+/bin/wgifctl /etc/wgifctl.conf down
 
+[Install]
+WantedBy=network.target

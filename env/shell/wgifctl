@@ -11,7 +11,10 @@ function usage () {
 	echo "Usage:"
 	echo "wgifctl CONFIG-FILE { up | down }"
 	echo "wgifctl -l PHYSICAL-IFDEV IFADDR SUBNET CIDR { up | down }"
-	exit 1
+	echo "wgifctl -h"
+	
+	[[ -z $1 ]] && exit 0
+	exit $1
 }
 
 
@@ -19,13 +22,16 @@ function usage () {
 #from positional params
 
 lflag="no"
-while getopts ":l" name; do
+while getopts ":lh" name; do
 	case $name in
 		l)
 			lflag="yes"
 			;;
-		*)
+		h)
 			usage
+			;;
+		*)
+			usage 1
 			;;
 	esac
 done
@@ -55,7 +61,7 @@ action=$5
 if [[ -z $if ]] || [[ -z $ip ]] || [[ -z $action ]] \
        	|| [[ -z $subnet ]] || [[ -z $cidr ]]
 then
-	usage
+	usage 1
 fi
 
 

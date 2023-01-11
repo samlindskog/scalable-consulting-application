@@ -1,7 +1,6 @@
 #!/bin/bash
 
 #Samuel Lindskog
-#lindskogsamuel@yahoo.com
 
 #script for initialization of wg virtual network device for use by 
 #systemd on startup and shutdown
@@ -41,10 +40,12 @@ shift $(($OPTIND - 1))
 #when no flag present, run -l with args from config
 
 [[ $lflag = no ]] && {
+	self=$(readlink -f $0)
+	action=$2
 	default=/dev/null	#prevents 'ambiguous redirect' error
 	conf=${1:-$default}	#if $1 unset
 
-	eval "$0 -l $(<$conf) $2"
+	eval "$self -l $(<$conf) $action"
 	exit $?
 }
 

@@ -4,7 +4,7 @@
 
 #script for installation of app
 
-scriptdir=$(dirname $(readlink -f ${BASH_SOURCE:-$0}))
+scriptdir=$(dirname $(readlink -f $0))
 
 function usage () {
 	echo "Usage:"

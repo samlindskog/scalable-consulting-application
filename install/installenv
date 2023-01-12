@@ -48,8 +48,8 @@ shift $((OPTIND - 1))
 }
 
 cp $scriptdir/../env/shell/wgifctl /bin
-cp $scriptdir/../env/shell/wgifctl.conf /etc
 cp $scriptdir/../env/systemd/wgifctl.service /etc/systemd/system
+cp $scriptdir/config/wgifctl.conf /etc
 
 [[ $eflag = "yes" ]] && systemctl enable wgifctl --now
 

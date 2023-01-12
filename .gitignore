@@ -1,1 +1,5 @@
 env/wg-prod
+install/config/private.key
+install/config/public.key
+install/config/wg.conf
+install/config/wgifctl.conf

@@ -82,22 +82,14 @@ function clean-address () {
 }
 
 
-#Cleanup function removes routes, addresses, and network devices
+#Cleanup function removes addresses and network devices
 #associated with wireguard
 
 function cleanup () {
-
-	#forms a string of form /route/address/link depending on
-	#required cleanup
-
-	[[ -n $(ip route | grep $subnet) ]] && switch="$switch/route"
 	[[ -n $(ip address | grep $ip) ]] && switch="$switch/address"
 	[[ -n $(ip link | grep wg0) ]] && switch="$switch/link"
 
 	case $switch in
-		*route*)
-			ip route del $subnet$cidr
-			;;&
 		*address*)
 			clean-address
 			;;&
@@ -109,7 +101,7 @@ function cleanup () {
 }
 
 
-#executes wireguard device, address, and route initialization
+#executes wireguard device and address initialization
 #after a call to cleanup
 
 function startup () {
@@ -117,13 +109,6 @@ function startup () {
 	ip link add link $if name wg0 type wireguard
 	ip address add $ip$cidr dev wg0 scope link
 	ip link set wg0 up
-
-	#routes on device are cached while computer is online,
-	#below is a check to make sure route initialization is
-	#required
-
-	[[ -z $(ip route | grep $subnet) ]] && \
-		ip route add $subnet$cidr dev eth0 scope link src $ip
 }
 
 
